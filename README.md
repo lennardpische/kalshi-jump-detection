@@ -75,10 +75,9 @@ Directional jumps are rare, labels depend on threshold choices, and liquidity va
 ```
 kalshi-jump-detection/
 ├── main.py                  # Entry point — runs full pipeline
-├── features/                # Feature engineering scripts
-├── models/                  # Model definitions (LightGBM, LSTM, Mamba, Moirai, CTTS, FT-Transformer, MoE)
+├── models/                  # Model paths (LightGBM, LSTM, Mamba, Moirai, CTTS, FT-Transformer, MoE) (**IN DRIVE**)
 ├── notebooks/               # Exploratory analysis and per-model training notebooks
-├── finding_an_edge_kalshi.pdf
+├── finding_an_edge_kalshi.pdf 
 └── README.md
 ```
 
