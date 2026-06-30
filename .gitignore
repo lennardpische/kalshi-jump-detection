@@ -2,3 +2,13 @@ data/
 .DS_Store
 **/.DS_Store
 .Rhistory
+
+# web
+node_modules/
+.next/
+app/web/.env.local
+
+# python
+__pycache__/
+*.pyc
+.venv/
