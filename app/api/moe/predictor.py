@@ -22,6 +22,11 @@ MODEL_DIR = Path(os.environ.get("MODEL_DIR", "data/models"))
 HORIZONS = [5, 15, 30, 60]
 
 
+def checkpoint_status() -> dict[int, bool]:
+    """Which horizons have a checkpoint file present under MODEL_DIR."""
+    return {h: (MODEL_DIR / f"moe_gate_{h}m.pt").is_file() for h in HORIZONS}
+
+
 @lru_cache(maxsize=len(HORIZONS))
 def _load(horizon: int):
     """Load and cache the gate + its normalization stats for one horizon."""
