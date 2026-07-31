@@ -48,6 +48,6 @@ Phase 2 unlocks once the checkpoints + per-expert inference code are available.
 
 1. Place `moe_gate_*.pt` in a `MODEL_DIR` and confirm `app/api` serves `/predict`.
 2. Replace placeholder probabilities in `sample_markets/*.json` with real values.
-3. Deploy `app/api` to HF Spaces or Render (small Dockerfile around uvicorn).
+3. Deploy `app/api` to HF Spaces or Render using the included `Dockerfile`.
 4. Deploy `app/web` to Vercel; set `NEXT_PUBLIC_API_URL` to the API URL.
 5. Lock CORS in `app/api/main.py` to the Vercel origin.

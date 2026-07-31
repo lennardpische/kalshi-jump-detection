@@ -31,11 +31,21 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Until the checkpoints are present, `/predict` raises a clear `FileNotFoundError`;
-the rest of the API works. This scaffold is **not expected to run yet**.
+Until the checkpoints are present, `/predict` returns a `503` with a clear
+message; `/health`, `/markets`, and `/markets/{id}` all work without them.
 
 ## Deploy (free tier)
 
 PyTorch is too large for Vercel serverless, so host this on **Hugging Face
-Spaces** or **Render free tier** (a small Dockerfile wrapping uvicorn). The web
-app on Vercel calls it via `NEXT_PUBLIC_API_URL`.
+Spaces** or **Render free tier** using the included `Dockerfile` (CPU-only
+torch, small image):
+
+```bash
+docker build -t kalshi-api .
+docker run -p 8000:8000 \
+  -e ALLOWED_ORIGINS=https://your-web-app.vercel.app \
+  -v /path/to/checkpoints:/app/data/models \
+  kalshi-api
+```
+
+The web app on Vercel calls it via `NEXT_PUBLIC_API_URL`.
