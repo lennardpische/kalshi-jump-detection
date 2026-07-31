@@ -1,11 +1,9 @@
 // Landing page: list sample markets and let a visitor run the model.
 // Phase 1 reads precomputed expert probabilities bundled with each market;
-// the "Predict" action calls the API's MoE gate.
-//
-// This is a scaffold — wiring (state, the predict call, result display) is left
-// as clearly-marked TODOs so the structure can be reviewed first.
+// the "Predict" action (MarketCard) calls the API's MoE gate.
 
 import { listMarkets, type Market } from "../lib/api";
+import MarketCard from "./MarketCard";
 
 async function getMarkets(): Promise<Market[]> {
   try {
@@ -38,15 +36,7 @@ export default async function Home() {
         ) : (
           <div className="grid">
             {markets.map((m) => (
-              <article key={m.id} className="card">
-                <span className="tag">{m.category}</span>
-                <h3>{m.title}</h3>
-                <p className="muted">{m.description}</p>
-                {/* TODO: button -> POST /predict -> show probabilities + gate weights */}
-                <button className="btn" disabled>
-                  Predict (coming soon)
-                </button>
-              </article>
+              <MarketCard key={m.id} market={m} />
             ))}
           </div>
         )}

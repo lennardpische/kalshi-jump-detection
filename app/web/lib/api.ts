@@ -10,6 +10,12 @@ export type Market = {
   description: string;
 };
 
+export type MarketDetail = Market & {
+  horizon: number;
+  gate_feats: number[];
+  expert_probs: Record<string, number[]>;
+};
+
 export type Prediction = {
   horizon: number;
   prediction: "down" | "flat" | "up";
@@ -17,9 +23,24 @@ export type Prediction = {
   gate_weights: Record<string, number>;
 };
 
+async function readError(res: Response, fallback: string): Promise<string> {
+  try {
+    const body = await res.json();
+    return body.detail ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export async function listMarkets(): Promise<Market[]> {
   const res = await fetch(`${API}/markets`, { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to load markets");
+  if (!res.ok) throw new Error(await readError(res, "Failed to load markets"));
+  return res.json();
+}
+
+export async function getMarket(id: string): Promise<MarketDetail> {
+  const res = await fetch(`${API}/markets/${id}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(await readError(res, "Failed to load market"));
   return res.json();
 }
 
@@ -29,6 +50,6 @@ export async function predict(body: unknown): Promise<Prediction> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error("Prediction failed");
+  if (!res.ok) throw new Error(await readError(res, "Prediction failed"));
   return res.json();
 }
