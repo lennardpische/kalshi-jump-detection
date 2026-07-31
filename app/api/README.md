@@ -17,8 +17,10 @@ api/
 
 ## Checkpoints
 
-Not committed. Download `moe_gate_{5,15,30,60}m.pt` from the project Drive and
-point the service at them:
+Not committed, and not yet trained — the 6 base-model checkpoints exist on
+Drive, but `moe_gate_{5,15,30,60}m.pt` (the gate itself) still needs to be
+produced by running `research/main.py` against `data/moe_data.parquet`
+(see `DEPLOYMENT.md`). Once you have them, point the service at the folder:
 
 ```bash
 export MODEL_DIR=/path/to/models
