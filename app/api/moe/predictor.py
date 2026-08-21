@@ -1,7 +1,8 @@
 """Loads MoE gate checkpoints and runs inference.
 
-Checkpoints are looked up under MODEL_DIR (env var; defaults to ./data/models),
-one per horizon: moe_gate_5m.pt, moe_gate_15m.pt, moe_gate_30m.pt, moe_gate_60m.pt.
+Checkpoints are looked up under MODEL_DIR (env var; defaults to
+app/api/data/models), one per horizon: moe_gate_5m.pt, moe_gate_15m.pt,
+moe_gate_30m.pt, moe_gate_60m.pt.
 
 This module is intentionally minimal — it is the seam where the real .pt files
 get wired in. It is NOT runnable until the checkpoints are present.
@@ -18,19 +19,27 @@ import torch
 
 from .gate import MoEGate, EXPERT_NAMES, CLASS_NAMES, N_EXPERTS, N_CLASSES
 
-MODEL_DIR = Path(os.environ.get("MODEL_DIR", "data/models"))
+DEFAULT_MODEL_DIR = Path(__file__).resolve().parents[1] / "data" / "models"
+MODEL_DIR = Path(os.environ.get("MODEL_DIR", DEFAULT_MODEL_DIR)).expanduser()
 HORIZONS = [5, 15, 30, 60]
+
+
+def _checkpoint_path(horizon: int) -> Path:
+    return MODEL_DIR / f"moe_gate_{horizon}m.pt"
 
 
 def checkpoint_status() -> dict[int, bool]:
     """Which horizons have a checkpoint file present under MODEL_DIR."""
-    return {h: (MODEL_DIR / f"moe_gate_{h}m.pt").is_file() for h in HORIZONS}
+    return {h: _checkpoint_path(h).is_file() for h in HORIZONS}
 
 
 @lru_cache(maxsize=len(HORIZONS))
 def _load(horizon: int):
     """Load and cache the gate + its normalization stats for one horizon."""
-    ckpt_path = MODEL_DIR / f"moe_gate_{horizon}m.pt"
+    if horizon not in HORIZONS:
+        raise ValueError(f"Unsupported horizon {horizon}. Must be one of {HORIZONS}.")
+
+    ckpt_path = _checkpoint_path(horizon)
     if not ckpt_path.is_file():
         raise FileNotFoundError(
             f"Missing checkpoint {ckpt_path}. Set MODEL_DIR to the folder "
@@ -53,11 +62,34 @@ def predict(horizon: int, gate_feats, expert_probs, expert_mask):
 
     Returns dict with class probabilities, predicted label, and gate weights.
     """
-    model, _ = _load(horizon)
+    model, ckpt = _load(horizon)
+    n_features = len(ckpt["gate_feat_cols"])
+
+    gate_feats = np.asarray(gate_feats, dtype=np.float32)
+    if gate_feats.size == 0:
+        # Empty means "use train-fold mean context" because the gate features are
+        # standardized in the checkpoint convention.
+        gate_feats = np.zeros(n_features, dtype=np.float32)
+    if gate_feats.shape != (n_features,):
+        raise ValueError(f"expected {n_features} gate features, got {gate_feats.size}")
+
+    expert_probs = np.asarray(expert_probs, dtype=np.float32)
+    expert_mask = np.asarray(expert_mask, dtype=np.float32)
+    if expert_probs.shape != (N_EXPERTS, N_CLASSES):
+        raise ValueError(f"expected expert_probs shape {(N_EXPERTS, N_CLASSES)}, got {expert_probs.shape}")
+    if expert_mask.shape != (N_EXPERTS,):
+        raise ValueError(f"expected expert_mask shape {(N_EXPERTS,)}, got {expert_mask.shape}")
+    if not np.isfinite(gate_feats).all():
+        raise ValueError("gate_feats contains NaN or infinite values")
+    if not np.isfinite(expert_probs).all():
+        raise ValueError("expert_probs contains NaN or infinite values")
+    if not np.isfinite(expert_mask).all():
+        raise ValueError("expert_mask contains NaN or infinite values")
+
     with torch.no_grad():
-        gf = torch.tensor(np.asarray(gate_feats, dtype=np.float32)).unsqueeze(0)
-        ep = torch.tensor(np.asarray(expert_probs, dtype=np.float32)).unsqueeze(0)
-        em = torch.tensor(np.asarray(expert_mask, dtype=np.float32)).unsqueeze(0)
+        gf = torch.tensor(gate_feats).unsqueeze(0)
+        ep = torch.tensor(expert_probs).unsqueeze(0)
+        em = torch.tensor(expert_mask).unsqueeze(0)
         final_probs, gate_weights = model(gf, ep, em)
 
     probs = final_probs.squeeze(0).numpy()

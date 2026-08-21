@@ -17,14 +17,24 @@ api/
 
 ## Checkpoints
 
-Not committed, and not yet trained — the 6 base-model checkpoints exist on
-Drive, but `moe_gate_{5,15,30,60}m.pt` (the gate itself) still needs to be
-produced by running `research/main.py` against `data/moe_data.parquet`
-(see `DEPLOYMENT.md`). Once you have them, point the service at the folder:
+Not committed because they are large. Download the trained gate checkpoints
+from the project Drive and point the service at that folder:
 
 ```bash
 export MODEL_DIR=/path/to/models
 ```
+
+Expected filenames:
+
+```text
+moe_gate_5m.pt
+moe_gate_15m.pt
+moe_gate_30m.pt
+moe_gate_60m.pt
+```
+
+You can also place them in `app/api/data/models/` for local development; that
+directory is gitignored.
 
 ## Run locally
 
@@ -34,7 +44,28 @@ uvicorn main:app --reload
 ```
 
 Until the checkpoints are present, `/predict` returns a `503` with a clear
-message; `/health`, `/markets`, and `/markets/{id}` all work without them.
+message; `/health`, `/markets`, and `/markets/{id}` all work without them. The
+bundled sample markets use empty `gate_feats`, which the API interprets as the
+train-fold mean context stored by each checkpoint.
+
+## Export real sample markets
+
+If you have the large `moe_data.parquet`, do not commit or deploy it. Extract a
+few tiny JSON rows instead:
+
+```bash
+cd app/api
+python3 -m pip install pyarrow
+python3 scripts/export_sample_markets.py \
+  --parquet /path/to/moe_data.parquet \
+  --model-dir ../../weights/drive-download-20260821T201649Z-1-001 \
+  --out-dir data/sample_markets \
+  --rows-per-horizon 2
+```
+
+The script streams the parquet, reads only the needed columns, uses the
+checkpoint metadata to standardize `gate_feats`, and writes API-ready JSON
+payloads with real `expert_probs`.
 
 ## Deploy (free tier)
 

@@ -7,7 +7,7 @@ This repo has two halves:
 | Folder | What it is |
 |---|---|
 | [`research/`](research/) | The original study — Mixture-of-Experts pipeline, training/eval code (`main.py`), notebooks, and the paper. See [`research/README.md`](research/README.md). |
-| [`app/`](app/) | A public, deployable demo of the model. **In progress — scaffold only.** |
+| [`app/`](app/) | A public, deployable demo of the model. |
 
 ## The demo (`app/`)
 
@@ -23,5 +23,6 @@ and the API returns a down/flat/up prediction with the per-expert gate weights.
 See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the architecture, the two-phase plan,
 and the open question about base-model checkpoints.
 
-> Status: reviewable scaffold. Reorganized layout + minimal base code; not yet
-> runnable end-to-end (needs the trained checkpoints wired in).
+> Status: Phase 1 API/frontend scaffold is runnable. Real `/predict` responses
+> require the trained `moe_gate_{5,15,30,60}m.pt` checkpoints to be downloaded
+> outside git and exposed through `MODEL_DIR`.

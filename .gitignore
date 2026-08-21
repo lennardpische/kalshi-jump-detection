@@ -1,7 +1,15 @@
-data/
+/data/
 .DS_Store
 **/.DS_Store
 .Rhistory
+
+# model/data artifacts
+weights/
+app/api/data/models/
+*.pt
+*.pth
+*.ckpt
+*.parquet
 
 # web
 node_modules/

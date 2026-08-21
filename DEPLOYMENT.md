@@ -27,34 +27,28 @@ Only needs the four `moe_gate_{5,15,30,60}m.pt` checkpoints.
 `app/api/experts/base.py` so a raw trade window → 6 probability vectors → gate.
 This is the heavy path and depends on the open question below.
 
-## Open question: do we have the trained gate?
+## Checkpoint status
 
-This was previously written backwards. Current status:
+Current status:
 
 - **The 6 base-model checkpoints exist** (LightGBM, LSTM, Mamba, Moirai,
   FT-Transformer, CTTS — on Drive).
-- **The gate checkpoints (`moe_gate_{5,15,30,60}m.pt`) do not exist yet.**
-  `research/main.py` trains and saves them itself (see its `torch.save(...)`
-  around the `ckpt_path = .../moe_gate_{HORIZON}m.pt` line) — it does **not**
-  need the 6 base-model checkpoints directly. It reads a single pre-merged
-  `data/moe_data.parquet` that already has each base model's 3-class
-  probability columns baked in (72 columns) plus labels, per the shared
-  artifact bundle linked at the top of that script.
+- **The gate checkpoints (`moe_gate_{5,15,30,60}m.pt`) also exist** in the
+  project Drive folder. They are intentionally not committed because they are
+  large.
 
-So producing the missing Phase 1 checkpoints is: confirm `moe_data.parquet` is
-available under `PROJECT_ROOT/data/`, then run `research/main.py` once per
-horizon (or the multi-horizon loop) so it writes `moe_gate_{H}m.pt` into
-`MODEL_DIR`. No inference code for the 6 experts needs to be written for this —
-that's still Phase 2's job (`app/api/experts/base.py`), needed only for scoring
-genuinely new/live trades rather than the bundled sample markets.
+For Phase 1, download or mount only the four gate checkpoints and set
+`MODEL_DIR` to that folder. The six base-model checkpoints are only needed for
+Phase 2, when the API accepts genuinely new raw trades instead of bundled
+precomputed expert probabilities.
 
 ## Steps to go live (Phase 1)
 
-1. Confirm `data/moe_data.parquet` is available and run `research/main.py`
-   (per horizon) to produce `moe_gate_{5,15,30,60}m.pt`.
-2. Point `app/api` at that `MODEL_DIR` and confirm `/predict` serves real
+1. Download or mount `moe_gate_{5,15,30,60}m.pt` outside git.
+2. Point `app/api` at that folder with `MODEL_DIR` and confirm `/predict` serves real
    predictions (`/health` reports `models_loaded: true`).
-3. Replace placeholder probabilities in `sample_markets/*.json` with real values.
+3. Replace placeholder probabilities in `sample_markets/*.json` with real
+   values from representative rows if needed.
 4. Deploy `app/api` to HF Spaces or Render using the included `Dockerfile`.
 5. Deploy `app/web` to Vercel; set `NEXT_PUBLIC_API_URL` to the API URL.
 6. Lock CORS in `app/api/main.py` (`ALLOWED_ORIGINS`) to the Vercel origin.

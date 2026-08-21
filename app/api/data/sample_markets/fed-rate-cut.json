@@ -1,0 +1,16 @@
+{
+  "id": "fed-rate-cut",
+  "title": "Fed rate cut by next meeting",
+  "category": "Economics",
+  "description": "A macro market where recent trades lean toward no immediate jump.",
+  "horizon": 30,
+  "gate_feats": [],
+  "expert_probs": {
+    "lgbm": [0.21, 0.63, 0.16],
+    "lstm": [0.24, 0.58, 0.18],
+    "mamba": [0.19, 0.65, 0.16],
+    "moirai": [0.22, 0.60, 0.18],
+    "ftt": [0.20, 0.62, 0.18],
+    "ctts": [0.23, 0.59, 0.18]
+  }
+}

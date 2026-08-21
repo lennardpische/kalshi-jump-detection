@@ -1,0 +1,16 @@
+{
+  "id": "election-turnout",
+  "title": "Election turnout exceeds forecast",
+  "category": "Politics",
+  "description": "A longer-window event market with experts tilted toward upside movement.",
+  "horizon": 60,
+  "gate_feats": [],
+  "expert_probs": {
+    "lgbm": [0.14, 0.50, 0.36],
+    "lstm": [0.16, 0.48, 0.36],
+    "mamba": [0.13, 0.51, 0.36],
+    "moirai": [0.18, 0.47, 0.35],
+    "ftt": [0.15, 0.49, 0.36],
+    "ctts": [0.17, 0.46, 0.37]
+  }
+}

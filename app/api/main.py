@@ -21,8 +21,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from moe.gate import EXPERT_NAMES, N_CLASSES
-from moe.predictor import HORIZONS, checkpoint_status, predict
-from schemas import Market, PredictRequest, PredictResponse
+from moe.predictor import HORIZONS, MODEL_DIR, checkpoint_status, predict
+from schemas import Market, MarketDetail, PredictRequest, PredictResponse
 
 DATA_DIR = Path(__file__).parent / "data" / "sample_markets"
 
@@ -44,7 +44,10 @@ def _load_market(market_id: str) -> dict:
     path = DATA_DIR / f"{market_id}.json"
     if not path.is_file():
         raise HTTPException(status_code=404, detail=f"Unknown market: {market_id}")
-    return json.loads(path.read_text())
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=500, detail=f"Invalid bundled market JSON: {market_id}") from e
 
 
 @app.get("/health")
@@ -54,6 +57,8 @@ def health():
         "status": "ok",
         "horizons": status,
         "models_loaded": any(status.values()),
+        "model_dir": str(MODEL_DIR),
+        "sample_markets_loaded": DATA_DIR.is_dir(),
     }
 
 
@@ -61,12 +66,12 @@ def health():
 def list_markets():
     markets = []
     for f in sorted(DATA_DIR.glob("*.json")):
-        m = json.loads(f.read_text())
+        m = json.loads(f.read_text(encoding="utf-8"))
         markets.append(Market(**{k: m[k] for k in ("id", "title", "category", "description")}))
     return markets
 
 
-@app.get("/markets/{market_id}")
+@app.get("/markets/{market_id}", response_model=MarketDetail)
 def get_market(market_id: str):
     return _load_market(market_id)
 

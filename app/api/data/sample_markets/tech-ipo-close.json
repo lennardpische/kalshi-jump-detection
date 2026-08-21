@@ -1,0 +1,16 @@
+{
+  "id": "tech-ipo-close",
+  "title": "Major tech IPO closes above offer",
+  "category": "Finance",
+  "description": "A finance event market with mixed expert signals after heavier trading.",
+  "horizon": 5,
+  "gate_feats": [],
+  "expert_probs": {
+    "lgbm": [0.34, 0.41, 0.25],
+    "lstm": [0.30, 0.43, 0.27],
+    "mamba": [0.37, 0.39, 0.24],
+    "moirai": [0.29, 0.45, 0.26],
+    "ftt": [0.33, 0.40, 0.27],
+    "ctts": [0.35, 0.38, 0.27]
+  }
+}

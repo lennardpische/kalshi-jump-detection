@@ -1,0 +1,16 @@
+{
+  "id": "world-cup-winner",
+  "title": "World Cup winner market",
+  "category": "Sports",
+  "description": "A soccer futures market with a moderately bullish short-horizon setup.",
+  "horizon": 15,
+  "gate_feats": [],
+  "expert_probs": {
+    "lgbm": [0.18, 0.55, 0.27],
+    "lstm": [0.22, 0.50, 0.28],
+    "mamba": [0.16, 0.57, 0.27],
+    "moirai": [0.20, 0.53, 0.27],
+    "ftt": [0.17, 0.54, 0.29],
+    "ctts": [0.19, 0.52, 0.29]
+  }
+}

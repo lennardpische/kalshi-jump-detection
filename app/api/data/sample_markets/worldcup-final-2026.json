@@ -1,0 +1,17 @@
+{
+  "id": "worldcup-final-2026",
+  "title": "Will the home team win the 2026 World Cup final?",
+  "category": "Sports",
+  "description": "Sample market for the demo. Expert probabilities below are placeholders illustrating the request shape — replace with values produced by the base models on real trade windows.",
+  "horizon": 5,
+  "gate_feats": [],
+  "expert_probs": {
+    "lgbm":   [0.18, 0.70, 0.12],
+    "lstm":   [0.20, 0.66, 0.14],
+    "mamba":  [0.22, 0.63, 0.15],
+    "moirai": [0.17, 0.71, 0.12],
+    "ftt":    [0.19, 0.68, 0.13],
+    "ctts":   [0.21, 0.64, 0.15]
+  },
+  "_note": "gate_feats is empty here, so the API uses the train-fold mean context stored in moe_gate_5m.pt. To score a real observation, provide the standardized feature vector in gate_feat_cols order."
+}

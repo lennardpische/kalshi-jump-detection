@@ -8,7 +8,7 @@ footer).
 web/
 ├── app/
 │   ├── layout.tsx      # shell, header, footer disclaimer
-│   ├── page.tsx        # market list + predict (wiring is TODO)
+│   ├── page.tsx        # market list + predict wiring
 │   └── globals.css     # Kalshi-ish palette
 └── lib/api.ts          # client for the inference API
 ```
@@ -26,4 +26,5 @@ npm run dev
 Import `app/web` as the Vercel project root. Set `NEXT_PUBLIC_API_URL` to the
 deployed inference API URL in Vercel env vars.
 
-> Scaffold only — the predict button and result view are stubbed.
+The predict button loads a bundled sample market from the API and posts its
+gate features plus expert probabilities to `/predict`.

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import math
 from typing import Dict, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from moe.gate import EXPERT_NAMES, CLASS_NAMES
 
@@ -23,6 +24,32 @@ class PredictRequest(BaseModel):
         ..., description="expert name -> [down, flat, up]; keys: " + ", ".join(EXPERT_NAMES)
     )
 
+    @field_validator("gate_feats")
+    @classmethod
+    def validate_gate_feats(cls, value: List[float]) -> List[float]:
+        if any(not math.isfinite(v) for v in value):
+            raise ValueError("gate_feats must contain only finite numbers")
+        return value
+
+    @field_validator("expert_probs")
+    @classmethod
+    def validate_expert_probs(cls, value: Dict[str, List[float]]) -> Dict[str, List[float]]:
+        normalized: Dict[str, List[float]] = {}
+        for name, probs in value.items():
+            if name not in EXPERT_NAMES:
+                continue
+            if len(probs) != 3:
+                raise ValueError(f"{name} must have exactly 3 probabilities")
+            if any((not math.isfinite(p)) or p < 0 for p in probs):
+                raise ValueError(f"{name} probabilities must be finite and non-negative")
+            total = sum(probs)
+            if total <= 0:
+                raise ValueError(f"{name} probabilities must sum to a positive value")
+            normalized[name] = [p / total for p in probs]
+        if not normalized:
+            raise ValueError("expert_probs must include at least one known expert")
+        return normalized
+
 
 class PredictResponse(BaseModel):
     horizon: int
@@ -38,3 +65,14 @@ class Market(BaseModel):
     title: str
     category: str
     description: str
+
+
+class MarketDetail(Market):
+    """Full bundled sample payload used by the frontend prediction button."""
+
+    horizon: int
+    gate_feats: List[float] = Field(
+        default_factory=list,
+        description="Standardized gate features. Empty means train-fold mean context.",
+    )
+    expert_probs: Dict[str, List[float]]
